@@ -126,6 +126,38 @@ JavaScript however, **does not have classes**. Ruby has these special things cal
 
 ### Prototypal Inheritance
 
+So we need to find a place where we can store methods that are related to specific objects in our application, so it's clear where that functionality belongs. 
+
+Let's look at another kind of object for an example and see where that object gets its behavior, then we can try to apply the same approach to our objects.
+
+Take an array for an example. How does an array know about the `.forEach` method? Or `.map`? 
+
+```js
+const numbers = [1,2,3]
+numbers.map(num => num * 2)
+```
+
+It's not on the array directly (check it out in the console) - but if we look at a special `__proto__` property we'll get a hint.
+
+```js
+numbers.__proto__.map === numbers.map // true
+```
+
+We can also see the array's constructor: Array; that gives us a hint. If we do `new Array()` we can see another way of creating new Array objects that gives us a hint on how this relates back to the `new` keyword and constructor we saw in earlier lessons.
+
+```js
+numbers.constructor // Array
+```
+
+So there's a link between the object ("instance") and its constructor function ("class"), and that link is the prototype!
+
+```js
+Array.prototype === numbers.__proto__
+Array.prototype.speak = function() {
+  console.log("hey I'm an array")
+}
+```
+
 > JavaScript is often described as a prototype-based language — to provide inheritance, objects can have a prototype object, which acts as a template object that it inherits methods and properties from. An object's prototype object may also have a prototype object, which it inherits methods and properties from, and so on. This is often referred to as a prototype chain, and explains why different objects have properties and methods defined on other objects available to them."
 
 > To be exact, the properties and methods are defined on the prototype property on the Objects' constructor functions, not the object instances themselves.
@@ -171,14 +203,16 @@ Robot.prototype
 // }
 ```
 
-- This object is in turn added as the `__proto__` for all robots created from our constructor:
+This object is in turn added as the `__proto__` for all robots created from our constructor:
 
 ```js
 const r = new Robot('rob', 3, 'JavaScript')
 r.__proto__ === Robot.prototype // true
 ```
 
-- Let's leverage our new understanding of the prototype chain to avoid duplicating `rechargeBatteries`:
+> A note on [`__proto__`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/proto): this is a feature available in most browsers for convenience, but it's not recommended that you use this code outside of the console. The object's prototype is stored as an internal reference (something the browser engine can access via `[[Prototype]]`), but not meant for developers to change/interact with directly! You can use `Object.getPrototypeOf(yourObject)` instead if you want to see the `__proto__` property. 
+
+Let's leverage our new understanding of the prototype chain to avoid duplicating `rechargeBatteries`:
 
 ```js
 function Robot(name, weight, specialty) {
